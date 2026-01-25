@@ -26,8 +26,8 @@ class _LevelScreenState extends State<LevelScreen> {
             Slider(
               value: _targetScore,
               min: 10,
-              max: 100,
-              divisions: 9,
+              max: 30,
+              divisions: 2,
               label: _targetScore.round().toString(),
               onChanged: (value) => setState(() => _targetScore = value),
             ),

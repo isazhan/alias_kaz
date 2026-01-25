@@ -43,7 +43,15 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  // Обязательно добавляем dispose
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   void _updateScore(bool isCorrect) {
+    HapticFeedback.lightImpact(); // Добавим тактильную отдачу при свайпе
     setState(() {
       String currentTeam = teams[currentTeamIndex];
       if (isCorrect) {
@@ -56,7 +64,14 @@ class _GameScreenState extends State<GameScreen> {
       } else {
         teamScores[currentTeam] = (teamScores[currentTeam] ?? 0) - 1;
       }
-      _currentIndex = (_currentIndex + 1) % _words.length;
+      
+      // Чтобы слова не заканчивались резко
+      if (_currentIndex < _words.length - 1) {
+        _currentIndex++;
+      } else {
+        _words.shuffle();
+        _currentIndex = 0;
+      }
     });
   }
 
@@ -94,6 +109,7 @@ class _GameScreenState extends State<GameScreen> {
       _isRoundActive = true;
       _timeLeft = 60;
     });
+    _timer?.cancel(); // На всякий случай отменяем старый таймер
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_timeLeft > 0) {
         setState(() => _timeLeft--);
@@ -117,9 +133,9 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _handleSwipeEnd() {
-    if (_swipeOffset < -150) {
+    if (_swipeOffset < -120) {
       _updateScore(true); // Жоғары - дұрыс
-    } else if (_swipeOffset > 150) {
+    } else if (_swipeOffset > 120) {
       _updateScore(false); // Төмен - қате
     }
     setState(() => _swipeOffset = 0);
@@ -127,12 +143,18 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Безопасная проверка на пустой список команд
+    if (teams.isEmpty) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    
     String currentTeam = teams[currentTeamIndex];
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: SafeArea(
-        child: _isRoundActive ? _buildGameUI(currentTeam) : _buildScoreboardUI(currentTeam),
+        child: AnimatedSwitcher( // Добавляем плавный переход между экранами
+          duration: const Duration(milliseconds: 300),
+          child: _isRoundActive ? _buildGameUI(currentTeam) : _buildScoreboardUI(currentTeam),
+        ),
       ),
     );
   }
@@ -161,18 +183,28 @@ class _GameScreenState extends State<GameScreen> {
                 alignment: Alignment.center,
                 children: [
                   _swipeIndicator(),
-                  Transform.translate(
-                    offset: Offset(0, _swipeOffset),
+                  AnimatedContainer( // Плавное движение круга
+                    duration: const Duration(milliseconds: 50),
+                    transform: Matrix4.translationValues(0, _swipeOffset, 0),
                     child: Container(
-                      width: 260, height: 260,
+                      width: 280, height: 280,
                       decoration: BoxDecoration(
                         color: Colors.white, shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: Colors.white24, blurRadius: 20)],
+                        boxShadow: [
+                          BoxShadow(
+                            color: _swipeOffset < -50 ? Colors.green.withOpacity(0.5) : 
+                                   _swipeOffset > 50 ? Colors.red.withOpacity(0.5) : Colors.white24, 
+                            blurRadius: 30
+                          )
+                        ],
                       ),
                       alignment: Alignment.center,
-                      child: Text(_words.isEmpty ? "..." : _words[_currentIndex],
+                      padding: const EdgeInsets.all(20),
+                      child: Text(
+                        _words.isEmpty ? "Жүктеу..." : _words[_currentIndex],
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black)),
+                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
                     ),
                   ),
                 ],
@@ -180,6 +212,10 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
         ),
+        const Padding(
+          padding: EdgeInsets.only(bottom: 40),
+          child: Text("⬆ Дұрыс | Төмен ⬇ Қате", style: TextStyle(color: Colors.white38)),
+        )
       ],
     );
   }
@@ -231,7 +267,7 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _swipeIndicator() {
     if (_swipeOffset.abs() < 50) return const SizedBox();
-    return Text(_swipeOffset < 0 ? "ДҰРЫС +1" : "ҚАТЕ -1",
+    return Text(_swipeOffset < 0 ? "ДҰРЫС +1" : "ӨТКІЗУ -1",
         style: TextStyle(color: _swipeOffset < 0 ? Colors.green : Colors.red, fontSize: 28, fontWeight: FontWeight.bold));
   }
 }

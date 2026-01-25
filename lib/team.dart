@@ -24,8 +24,9 @@ class _TeamSetupScreenState extends State<TeamSetupScreen> {
             TextField(controller: _team2Controller, decoration: const InputDecoration(labelText: '2-ші команда')),
             const Spacer(),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.white, minimumSize: const Size(200, 50)),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => LevelScreen(teams: [_team1Controller.text, _team2Controller.text]))),
-              child: const Text('Бастау'),
+              child: const Text('Бастау', style: TextStyle(color: Colors.black, fontSize: 18)),
             ),
           ],
         ),
