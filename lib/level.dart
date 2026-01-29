@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'globals.dart';
 
 class LevelScreen extends StatefulWidget {
   final List<String> teams;
@@ -13,34 +14,47 @@ class _LevelScreenState extends State<LevelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ойын баптаулары')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Жеңіс үшін қажетті ұпай:', style: TextStyle(fontSize: 18)),
-            Text('${_targetScore.toInt()}', 
-              style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.blue)),
-            
-            Slider(
-              value: _targetScore,
-              min: 10,
-              max: 30,
-              divisions: 2,
-              label: _targetScore.round().toString(),
-              onChanged: (value) => setState(() => _targetScore = value),
-            ),
-            
-            const SizedBox(height: 40),
-            const Text('Қиындық деңгейі:', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            _levelButton(context, 'Оңай', Colors.green),
-            _levelButton(context, 'Орташа', Colors.orange),
-            _levelButton(context, 'Қиын', Colors.red),
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [myColor4, myColor1],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          )
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text('Ойын баптаулары')
+          ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Жеңіс үшін қажетті ұпай:', style: TextStyle(fontSize: 18)),
+              Text('${_targetScore.toInt()}', 
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: myColor6)),
+              
+              Slider(
+                value: _targetScore,
+                min: 10,
+                max: 30,
+                divisions: 2,
+                label: _targetScore.round().toString(),
+                onChanged: (value) => setState(() => _targetScore = value),
+              ),
+              
+              const SizedBox(height: 40),
+              const Text('Қиындық деңгейі:', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 10),
+              _levelButton(context, 'Оңай', Colors.green),
+              _levelButton(context, 'Орташа', Colors.orange),
+              _levelButton(context, 'Қиын', Colors.red),
+            ],
+          ),
+        ),
+      )
     );
   }
 
@@ -53,7 +67,7 @@ class _LevelScreenState extends State<LevelScreen> {
           Navigator.pushNamed(context, '/game', arguments: {
             'teams': widget.teams,
             'difficulty': title,
-            'targetScore': _targetScore.toInt(), // Осы жерде ұпайды жібереміз
+            'targetScore': _targetScore.toInt(),
           });
         },
         child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18)),

@@ -1,4 +1,4 @@
-package com.example.alias_kaz
+package com.alias_kaz
 
 import io.flutter.embedding.android.FlutterActivity
 
